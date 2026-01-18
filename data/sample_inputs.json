@@ -1,0 +1,37 @@
+{
+  "example_1_small": {
+    "racks": 12,
+    "servers": 480,
+    "budget_usd": 250000,
+    "power_kw": 30,
+    "workload_type": "Mixed"
+  },
+  "example_2_medium": {
+    "racks": 50,
+    "servers": 2000,
+    "budget_usd": 400000,
+    "power_kw": 150,
+    "workload_type": "Web Services"
+  },
+  "example_3_large": {
+    "racks": 150,
+    "servers": 6000,
+    "budget_usd": 800000,
+    "power_kw": 500,
+    "workload_type": "AI Training"
+  },
+  "example_4_cost_sensitive": {
+    "racks": 8,
+    "servers": 160,
+    "budget_usd": 50000,
+    "power_kw": 20,
+    "workload_type": "Storage"
+  },
+  "example_5_high_performance": {
+    "racks": 200,
+    "servers": 8000,
+    "budget_usd": 1200000,
+    "power_kw": 800,
+    "workload_type": "AI Training"
+  }
+}
