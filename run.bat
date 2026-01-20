@@ -1,23 +1,16 @@
 @echo off
-echo ========================================
-echo DCN Topology Planner - Starting App
-echo ========================================
+echo Starting DC Topology Planner...
 echo.
 
-REM Activate virtual environment
-call venv\Scripts\activate.bat
-
-REM Check if streamlit is installed
-python -c "import streamlit" 2>nul
-if errorlevel 1 (
-    echo Installing dependencies...
-    pip install -r requirements.txt
-    echo.
+REM Activate virtual environment if it exists
+if exist venv\Scripts\activate.bat (
+    call venv\Scripts\activate.bat
 )
 
-REM Run the Streamlit app
-echo Starting Streamlit application...
-echo.
+REM Install dependencies if needed
+python -c "import streamlit" 2>nul || pip install -r requirements.txt
+
+REM Run the app
 streamlit run app.py
 
 pause

@@ -1,0 +1,25 @@
+[theme]
+# FORCE LIGHT THEME - MAXIMUM VISIBILITY CONFIGURATION
+base = "light"
+primaryColor = "#2E86AB"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F8F9FA"
+textColor = "#000000"
+font = "sans serif"
+
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"
+
+[logger]
+level = "error"
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = false
