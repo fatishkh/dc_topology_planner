@@ -1,10 +1,8 @@
 """
-Adaptive Topology Selection in Data Center Networks
+Data Center Network Topology Planner
 
-A Streamlit web application for recommending data center network topologies
-based on user inputs and explaining trade-offs.
-
-Author: Academic Decision-Support System
+A decision-support system for selecting optimal network topologies
+based on scale, budget, power, and workload requirements.
 """
 
 import streamlit as st
@@ -37,412 +35,884 @@ from visualization.charts import (
 
 # Page configuration
 st.set_page_config(
-    page_title="DCN Topology Planner",
+    page_title="DC Topology Planner",
     page_icon="🌐",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for academic styling
+# Optimized CSS for maximum visibility
 st.markdown("""
-    <style>
-    /* Force light theme for all components */
-    :root {
-        --background-color: #ffffff;
-        --text-color: #212529;
-    }
+<style>
+/* FORCE LIGHT THEME - ESSENTIAL STYLES ONLY */
+
+/* GLOBAL OVERRIDES - FORCE LIGHT THEME */
+* {
+    color: #000000 !important;
+}
+
+html, body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+.stApp {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+.main {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+.block-container {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    max-width: 1400px;
+}
+
+/* HEADERS - ALL LEVELS */
+h1, h2, h3, h4, h5, h6 {
+    color: #1a1a1a !important;
+    font-weight: 600 !important;
+}
+
+h1 {
+    border-bottom: 2px solid #2E86AB !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 15px !important;
+}
+
+h2 {
+    color: #2E86AB !important;
+    border-left: 3px solid #2E86AB !important;
+    padding-left: 10px !important;
+    margin-top: 25px !important;
+    margin-bottom: 15px !important;
+}
+
+h3 {
+    color: #4a4a4a !important;
+    margin-top: 15px !important;
+}
+
+h4 {
+    color: #495057 !important;
+}
+
+/* TEXT ELEMENTS - COMPREHENSIVE */
+p, span, div, label, li, td, th, a, em, strong, b, i, small, code {
+    color: #000000 !important;
+}
+
+.stMarkdown, .stMarkdown * {
+    color: #000000 !important;
+}
+
+.stText, .stText * {
+    color: #000000 !important;
+}
+
+/* LABELS - ALL INPUT TYPES */
+label, .stLabel, [data-testid*="label"] {
+    color: #000000 !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}
+
+.stTextInput label,
+.stNumberInput label,
+.stSelectbox label,
+.stTextArea label,
+.stDateInput label,
+.stTimeInput label,
+.stFileUploader label,
+.stColorPicker label,
+.stSlider label,
+.stCheckbox label,
+.stRadio label,
+.stMultiSelect label {
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+/* INPUT FIELDS - ALL TYPES */
+input, textarea, select {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 4px !important;
+}
+
+.stTextInput > div > div > input,
+.stNumberInput > div > div > input,
+.stTextArea > div > div > textarea {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 1px solid #ced4da !important;
+}
+
+.stTextInput > div > div > input:focus,
+.stNumberInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus {
+    border-color: #2E86AB !important;
+    box-shadow: 0 0 0 2px rgba(46, 134, 171, 0.15) !important;
+    color: #000000 !important;
+}
+
+/* SELECTBOX - ULTRA COMPREHENSIVE FIX */
+.stSelectbox {
+    color: #000000 !important;
+}
+
+.stSelectbox > div {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+.stSelectbox > div > div {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+.stSelectbox [data-baseweb="select"] {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+.stSelectbox [data-baseweb="select"] > div {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+.stSelectbox [data-baseweb="select"] > div > div {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+.stSelectbox [data-baseweb="select"] span {
+    color: #000000 !important;
+}
+
+.stSelectbox [data-baseweb="select"] div {
+    color: #000000 !important;
+}
+
+/* DROPDOWN MENUS */
+[data-baseweb="popover"] {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+[data-baseweb="popover"] * {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+[data-baseweb="popover"] li,
+[data-baseweb="popover"] [role="option"],
+[data-baseweb="popover"] [role="menuitem"] {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+[data-baseweb="popover"] [role="option"]:hover,
+[data-baseweb="popover"] li:hover {
+    background-color: #e7f3ff !important;
+    color: #000000 !important;
+}
+
+[data-baseweb="menu"] {
+    background-color: #FFFFFF !important;
+}
+
+[data-baseweb="menu"] li {
+    color: #000000 !important;
+}
+
+/* BUTTONS - ALL STATES */
+.stButton > button {
+    background-color: #2E86AB !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 12px 28px !important;
+    font-weight: 500 !important;
+    font-size: 15px !important;
+}
+
+.stButton > button:hover {
+    background-color: #1e5f7a !important;
+    color: #FFFFFF !important;
+}
+
+/* NUMBER INPUT +/- BUTTONS */
+.stNumberInput button {
+    background-color: #333333 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #555555 !important;
+    border-radius: 3px !important;
+}
+
+.stNumberInput button:hover {
+    background-color: #dc3545 !important;
+    color: #FFFFFF !important;
+}
+
+.stNumberInput button svg {
+    fill: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+.stButton > button:focus {
+    background-color: #1e5f7a !important;
+    color: #FFFFFF !important;
+}
+
+.stButton > button[kind="secondary"] {
+    background-color: #6c757d !important;
+    color: #FFFFFF !important;
+}
+
+.stButton > button[kind="secondary"]:hover {
+    background-color: #545b62 !important;
+    color: #FFFFFF !important;
+}
+
+/* EXPANDERS */
+.streamlit-expanderHeader {
+    background-color: #f8f9fa !important;
+    color: #2E86AB !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 4px !important;
+    padding: 14px 18px !important;
+}
+
+.streamlit-expanderHeader * {
+    color: #2E86AB !important;
+}
+
+.streamlit-expanderHeader p {
+    color: #2E86AB !important;
+    font-weight: 500 !important;
+}
+
+.streamlit-expanderHeader span {
+    color: #2E86AB !important;
+}
+
+.streamlit-expanderHeader svg {
+    color: #2E86AB !important;
+    fill: #2E86AB !important;
+}
+
+.streamlit-expanderContent {
+    background-color: #FFFFFF !important;
+    border: 1px solid #dee2e6 !important;
+    border-top: none !important;
+    padding: 18px !important;
+}
+
+.streamlit-expanderContent * {
+    color: #000000 !important;
+}
+
+.streamlit-expanderContent p,
+.streamlit-expanderContent li,
+.streamlit-expanderContent div,
+.streamlit-expanderContent span {
+    color: #000000 !important;
+}
+
+/* METRICS */
+[data-testid="stMetricValue"] {
+    color: #2E86AB !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+}
+
+[data-testid="stMetricLabel"] {
+    color: #495057 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+[data-testid="stMetricDelta"] {
+    color: #495057 !important;
+}
+
+/* HELP/INFO ICONS */
+[data-testid="stTooltipIcon"] {
+    background-color: #e9ecef !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 50% !important;
+    color: #000000 !important;
+    width: 20px !important;
+    height: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+}
+
+[data-testid="stTooltipIcon"]:before {
+    content: "i" !important;
+    color: #000000 !important;
+    font-style: italic !important;
+    font-weight: bold !important;
+}
+
+[data-testid="stTooltipIcon"] svg {
+    display: none !important;
+}
+
+/* Alternative tooltip icon selectors */
+.stTooltip [data-testid="stTooltipIcon"],
+.element-container [data-testid="stTooltipIcon"],
+[role="button"][aria-label*="help"] {
+    background-color: #e9ecef !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 50% !important;
+    color: #000000 !important;
+}
+
+/* ALERT BOXES */
+.stAlert, [data-testid="stAlert"] {
+    color: #000000 !important;
+}
+
+.stAlert *, [data-testid="stAlert"] * {
+    color: #000000 !important;
+}
+
+.stInfo {
+    background-color: #e7f3ff !important;
+    border-left: 4px solid #2E86AB !important;
+}
+
+.stInfo * {
+    color: #0c5460 !important;
+}
+
+.stSuccess {
+    background-color: #d4edda !important;
+}
+
+.stSuccess * {
+    color: #155724 !important;
+}
+
+.stWarning {
+    background-color: #fff3cd !important;
+}
+
+.stWarning * {
+    color: #856404 !important;
+}
+
+.stError {
+    background-color: #f8d7da !important;
+}
+
+.stError * {
+    color: #721c24 !important;
+}
+
+/* DATAFRAMES AND TABLES */
+.stDataFrame, [data-testid="stDataFrame"] {
+    background-color: #FFFFFF !important;
+}
+
+.stTable {
+    background-color: #FFFFFF !important;
+}
+
+table {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+table th {
+    background-color: #2E86AB !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+}
+
+table td {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+table tr {
+    background-color: #FFFFFF !important;
+}
+
+table tr:nth-child(even) {
+    background-color: #f8f9fa !important;
+}
+
+/* CAPTIONS */
+.stCaption, [data-testid="stCaptionContainer"] {
+    color: #6c757d !important;
+}
+
+.stCaption * {
+    color: #6c757d !important;
+}
+
+/* SIDEBAR */
+.css-1d391kg, .css-1cypcdb {
+    background-color: #FFFFFF !important;
+}
+
+.sidebar .sidebar-content {
+    background-color: #FFFFFF !important;
+}
+
+/* TABS */
+.stTabs [data-baseweb="tab-list"] {
+    background-color: #FFFFFF !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    color: #000000 !important;
+    background-color: #FFFFFF !important;
+}
+
+.stTabs [aria-selected="true"] {
+    color: #2E86AB !important;
+    background-color: #FFFFFF !important;
+}
+
+/* MULTISELECT */
+.stMultiSelect {
+    color: #000000 !important;
+}
+
+.stMultiSelect [data-baseweb="select"] {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+.stMultiSelect span {
+    color: #000000 !important;
+}
+
+.stMultiSelect [data-baseweb="tag"] {
+    background-color: #e7f3ff !important;
+    color: #000000 !important;
+}
+
+/* CHECKBOX AND RADIO */
+.stCheckbox {
+    color: #000000 !important;
+}
+
+.stRadio {
+    color: #000000 !important;
+}
+
+.stCheckbox > label {
+    color: #000000 !important;
+}
+
+.stRadio > label {
+    color: #000000 !important;
+}
+
+/* SLIDER */
+.stSlider {
+    color: #000000 !important;
+}
+
+.stSlider > label {
+    color: #000000 !important;
+}
+
+/* FILE UPLOADER */
+.stFileUploader {
+    color: #000000 !important;
+}
+
+.stFileUploader > label {
+    color: #000000 !important;
+}
+
+[data-testid="stFileUploader"] {
+    background-color: #FFFFFF !important;
+}
+
+/* DATE AND TIME INPUTS */
+.stDateInput {
+    color: #000000 !important;
+}
+
+.stTimeInput {
+    color: #000000 !important;
+}
+
+.stDateInput input {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+.stTimeInput input {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+/* COLOR PICKER */
+.stColorPicker {
+    color: #000000 !important;
+}
+
+.stColorPicker > label {
+    color: #000000 !important;
+}
+
+/* SPINNER */
+.stSpinner {
+    color: #2E86AB !important;
+}
+
+.stSpinner > div {
+    color: #2E86AB !important;
+}
+
+/* TOOLTIPS */
+[data-testid="stTooltipIcon"] {
+    color: #6c757d !important;
+}
+
+/* PROGRESS BAR */
+.stProgress > div > div {
+    background-color: #2E86AB !important;
+}
+
+/* JSON */
+.stJson {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+}
+
+/* CODE BLOCKS */
+.stCode {
+    background-color: #f8f9fa !important;
+    color: #000000 !important;
+}
+
+code {
+    background-color: #f8f9fa !important;
+    color: #e83e8c !important;
+    padding: 2px 6px !important;
+    border-radius: 3px !important;
+}
+
+pre {
+    background-color: #f8f9fa !important;
+    color: #000000 !important;
+}
+
+/* LINKS */
+a, a:visited, a:hover {
+    color: #2E86AB !important;
+}
+
+/* STRONG AND EMPHASIS */
+strong, b {
+    color: inherit !important;
+    font-weight: 600 !important;
+}
+
+em, i {
+    color: inherit !important;
+}
+
+/* DIVIDERS */
+hr {
+    border-color: #dee2e6 !important;
+    margin: 30px 0 !important;
+}
+
+/* PLOTLY CHARTS */
+.js-plotly-plot {
+    background-color: #FFFFFF !important;
+}
+
+/* MATPLOTLIB FIGURES */
+.stPlotlyChart {
+    background-color: #FFFFFF !important;
+}
+
+/* HIDE STREAMLIT BRANDING */
+#MainMenu {visibility: hidden !important;}
+footer {visibility: hidden !important;}
+header {visibility: hidden !important;}
+.stDeployButton {visibility: hidden !important;}
+
+/* SCROLLBARS */
+::-webkit-scrollbar {
+    width: 8px !important;
+    height: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1 !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #2E86AB !important;
+    border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #1e5f7a !important;
+}
+
+/* CONTAINER SPACING */
+.element-container {
+    margin-bottom: 1.5rem !important;
+}
+
+/* CUSTOM CARDS */
+.metric-card {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    padding: 20px !important;
+    border-radius: 8px !important;
+    border: 1px solid #dee2e6 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
+/* FORCE VISIBILITY FOR ANY MISSED ELEMENTS */
+[class*="st"] {
+    color: #000000 !important;
+}
+
+[data-testid*="st"] {
+    color: #000000 !important;
+}
+
+/* DATAFRAME CONTROLS - SHOW/HIDE COLUMNS BUTTON */
+[data-testid="stDataFrameResizeHandle"] {
+    color: #FFFFFF !important;
+    background-color: #2E86AB !important;
+}
+
+[data-testid="stDataFrame"] button {
+    background-color: #2E86AB !important;
+    color: #FFFFFF !important;
+    border: none !important;
+}
+
+[data-testid="stDataFrame"] button svg {
+    fill: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+[data-testid="stDataFrame"] [role="button"] {
+    background-color: #2E86AB !important;
+    color: #FFFFFF !important;
+}
+
+[data-testid="stDataFrame"] [role="button"] svg {
+    fill: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+/* DATAFRAME TOOLBAR BUTTONS */
+.dataframe-toolbar button,
+.dataframe-controls button,
+[class*="dataframe"] button {
+    background-color: #2E86AB !important;
+    color: #FFFFFF !important;
+}
+
+[class*="dataframe"] button svg,
+.dataframe-toolbar button svg,
+.dataframe-controls button svg {
+    fill: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+/* GENERIC ICON FIXES */
+svg {
+    fill: currentColor !important;
+    stroke: currentColor !important;
+}
+
+button svg {
+    fill: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+/* FULLSCREEN BUTTON - BLACK BACKGROUND, WHITE ICON */
+[data-testid="stFullScreenFrame"] button,
+[title="View fullscreen"],
+[aria-label="View fullscreen"],
+button[title*="fullscreen"],
+button[aria-label*="fullscreen"],
+.stPlotlyChart button,
+.element-container button[title*="View"],
+[data-testid="stPlotlyChart"] button {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #333333 !important;
+    border-radius: 4px !important;
+    padding: 4px !important;
+}
+
+[data-testid="stFullScreenFrame"] button svg,
+[title="View fullscreen"] svg,
+[aria-label="View fullscreen"] svg,
+button[title*="fullscreen"] svg,
+button[aria-label*="fullscreen"] svg,
+.stPlotlyChart button svg,
+.element-container button[title*="View"] svg,
+[data-testid="stPlotlyChart"] button svg {
+    fill: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+/* CHART CONTROL BUTTONS */
+.js-plotly-plot .modebar {
+    background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+.js-plotly-plot .modebar-btn {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #333333 !important;
+}
+
+.js-plotly-plot .modebar-btn svg {
+    fill: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+}
+
+.js-plotly-plot .modebar-btn:hover {
+    background-color: #333333 !important;
+}
+
+/* MATPLOTLIB TOOLBAR BUTTONS */
+.toolbar button {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #333333 !important;
+}
+
+.toolbar button svg {
+    fill: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+}
+
+/* STREAMLIT CONTROL BUTTONS */
+[data-testid*="button"] svg,
+[data-testid*="Button"] svg {
+    fill: #FFFFFF !important;
+    stroke: #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+/* ULTIMATE FALLBACK */
+div, span, p, label, input, textarea, select, button, a, li, td, th {
+    color: #000000 !important;
+}
+</style>
+
+<script>
+// Simplified JavaScript fix
+function fixVisibility() {
+    // Fix selectboxes
+    document.querySelectorAll('[data-baseweb="select"] *').forEach(el => {
+        el.style.setProperty('color', '#000000', 'important');
+        el.style.setProperty('background-color', '#FFFFFF', 'important');
+    });
     
-    /* Override Streamlit's theme if dark mode is detected */
-    .stApp[data-theme="dark"],
-    [data-theme="dark"] {
-        --background-color: #ffffff !important;
-        --text-color: #212529 !important;
-    }
-    /* Main app styling - Clean white background */
-    .main {
-        background-color: #ffffff;
-        padding: 1.5rem;
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-    .stApp {
-        background-color: #ffffff;
-    }
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
+    // Fix dropdowns
+    document.querySelectorAll('[data-baseweb="popover"] *').forEach(el => {
+        el.style.setProperty('color', '#000000', 'important');
+        el.style.setProperty('background-color', '#FFFFFF', 'important');
+    });
     
-    /* Ensure all text is visible - Base text color */
-    body, p, div, span, label {
-        color: #212529 !important;
-    }
+    // Fix number input +/- buttons
+    document.querySelectorAll('.stNumberInput button').forEach(button => {
+        button.style.setProperty('background-color', '#333333', 'important');
+        button.style.setProperty('color', '#FFFFFF', 'important');
+        button.style.setProperty('border', '1px solid #555555', 'important');
+        
+        // Add hover effect
+        button.addEventListener('mouseenter', function() {
+            this.style.setProperty('background-color', '#dc3545', 'important');
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.setProperty('background-color', '#333333', 'important');
+        });
+        
+        const svg = button.querySelector('svg');
+        if (svg) {
+            svg.style.setProperty('fill', '#FFFFFF', 'important');
+            svg.style.setProperty('stroke', '#FFFFFF', 'important');
+            svg.style.setProperty('color', '#FFFFFF', 'important');
+        }
+    });
     
-    /* Header styling - Clean and minimal */
-    h1 {
-        color: #1a1a1a !important;
-        border-bottom: 2px solid #2E86AB;
-        padding-bottom: 12px;
-        margin-bottom: 15px;
-        font-weight: 600;
-        font-size: 2rem;
-    }
-    h2 {
-        color: #2E86AB !important;
-        margin-top: 25px;
-        margin-bottom: 15px;
-        font-weight: 600;
-        font-size: 1.5rem;
-        padding-left: 8px;
-        border-left: 3px solid #2E86AB;
-    }
-    h3 {
-        color: #4a4a4a !important;
-        font-weight: 600;
-        margin-top: 15px;
-        font-size: 1.25rem;
-    }
-    h4 {
-        color: #495057 !important;
-        font-weight: 600;
-        font-size: 1.1rem;
-    }
+    // Fix help/info icons
+    document.querySelectorAll('[data-testid="stTooltipIcon"]').forEach(icon => {
+        icon.style.setProperty('background-color', '#e9ecef', 'important');
+        icon.style.setProperty('border', '1px solid #ced4da', 'important');
+        icon.style.setProperty('border-radius', '50%', 'important');
+        icon.style.setProperty('color', '#000000', 'important');
+        icon.style.setProperty('width', '20px', 'important');
+        icon.style.setProperty('height', '20px', 'important');
+        icon.style.setProperty('display', 'flex', 'important');
+        icon.style.setProperty('align-items', 'center', 'important');
+        icon.style.setProperty('justify-content', 'center', 'important');
+        icon.style.setProperty('font-size', '12px', 'important');
+        icon.style.setProperty('font-weight', 'bold', 'important');
+        
+        // Hide the SVG and add text "i"
+        const svg = icon.querySelector('svg');
+        if (svg) {
+            svg.style.display = 'none';
+        }
+        
+        // Add "i" text if not already present
+        if (!icon.textContent || icon.textContent.trim() === '') {
+            icon.textContent = 'i';
+            icon.style.setProperty('font-style', 'italic', 'important');
+        }
+    });
     
-    /* All paragraph and text elements */
-    p {
-        color: #212529 !important;
-    }
-    
-    /* Streamlit text elements */
-    .stMarkdown p {
-        color: #212529 !important;
-    }
-    
-    /* Label text visibility */
-    label {
-        color: #212529 !important;
-        font-weight: 500 !important;
-    }
-    
-    /* Input labels */
-    .stNumberInput label,
-    .stSelectbox label {
-        color: #212529 !important;
-        font-weight: 600 !important;
-        font-size: 14px !important;
-    }
-    
-    /* Input field styling - Clean minimal design */
-    .stNumberInput > div > div > input {
-        background-color: #ffffff !important;
-        border: 1px solid #ced4da !important;
-        border-radius: 4px;
-        padding: 10px 14px;
-        font-size: 15px;
-        color: #212529 !important;
-        transition: border-color 0.2s;
-    }
-    .stNumberInput > div > div > input:focus {
-        border-color: #2E86AB !important;
-        box-shadow: 0 0 0 2px rgba(46, 134, 171, 0.15);
-        color: #212529 !important;
-        outline: none;
-    }
-    
-     /* SIMPLE SELECTBOX FIX - Easy and Direct */
-     .stSelectbox label {
-         color: #212529 !important;
-         font-weight: 600 !important;
-     }
-     
-     /* Force all selectbox elements to have visible text */
-     .stSelectbox,
-     .stSelectbox *,
-     .stSelectbox * * {
-         color: #212529 !important;
-     }
-     
-     /* Selectbox input field */
-     [data-baseweb="select"],
-     [data-baseweb="select"] input,
-     [data-baseweb="select"] > div,
-     [data-baseweb="select"] > div > div,
-     [data-baseweb="select"] > div > div > div,
-     [data-baseweb="select"] span,
-     [data-baseweb="select"] div {
-         color: #212529 !important;
-         background-color: #ffffff !important;
-     }
-     
-     /* Dropdown menu */
-     [data-baseweb="popover"],
-     [data-baseweb="popover"] * {
-         background-color: #ffffff !important;
-         color: #212529 !important;
-     }
-     
-     [data-baseweb="popover"] [role="option"] {
-         color: #212529 !important;
-         background-color: #ffffff !important;
-     }
-     
-     [data-baseweb="popover"] [role="option"]:hover {
-         background-color: #f0f9ff !important;
-         color: #212529 !important;
-     }
-    
-     /* Button styling - Clean minimal design */
-     .stButton > button {
-         background-color: #2E86AB;
-         color: white;
-         border: none;
-         border-radius: 4px;
-         padding: 12px 28px;
-         font-weight: 500;
-         font-size: 15px;
-         transition: all 0.2s;
-         box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-     }
-     .stButton > button:hover {
-         background-color: #1e5f7a;
-         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-     }
-    
-     /* Expander styling - Clean minimal design */
-     .streamlit-expanderHeader {
-         background-color: #f8f9fa !important;
-         border: 1px solid #dee2e6 !important;
-         border-radius: 4px;
-         padding: 14px 18px;
-         font-weight: 500;
-     }
-     /* Clean text in expander header */
-     .streamlit-expanderHeader * {
-         color: #2E86AB !important;
-     }
-     .streamlit-expanderHeader p {
-         color: #2E86AB !important;
-         font-weight: 500 !important;
-     }
-     .streamlit-expanderHeader svg {
-         color: #2E86AB !important;
-         fill: #2E86AB !important;
-         stroke: #2E86AB !important;
-     }
-     /* Remove any background highlights */
-     .streamlit-expanderHeader mark,
-     .streamlit-expanderHeader span[style*="background"],
-     .streamlit-expanderHeader span[style*="highlight"] {
-         background-color: transparent !important;
-         background: transparent !important;
-         color: #2E86AB !important;
-     }
-     /* Override any inline styles */
-     .streamlit-expanderHeader [style*="color"] {
-         color: #2E86AB !important;
-     }
-     .streamlit-expanderContent {
-         background-color: #ffffff !important;
-         padding: 18px;
-         border-radius: 0 0 4px 4px;
-     }
-    .streamlit-expanderContent p,
-    .streamlit-expanderContent li,
-    .streamlit-expanderContent div {
-        color: #212529 !important;
-    }
-    
-    /* Metric cards */
-    [data-testid="stMetricValue"] {
-        font-size: 24px;
-        font-weight: 700;
-        color: #2E86AB;
-    }
-    [data-testid="stMetricLabel"] {
-        font-size: 14px;
-        color: #6c757d;
-        font-weight: 500;
-    }
-    
-    /* Info boxes */
-    .stInfo {
-        background-color: #e7f3ff !important;
-        border-left: 4px solid #2E86AB !important;
-        border-radius: 4px;
-        padding: 15px;
-    }
-    .stInfo p {
-        color: #0c5460 !important;
-        font-weight: 500 !important;
-    }
-    
-    /* Error boxes */
-    .stError {
-        background-color: #f8d7da !important;
-    }
-    .stError p {
-        color: #721c24 !important;
-    }
-    
-    /* Success boxes */
-    .stSuccess {
-        background-color: #d4edda !important;
-    }
-    .stSuccess p {
-        color: #155724 !important;
-    }
-    
-    /* Warning boxes */
-    .stWarning {
-        background-color: #fff3cd !important;
-    }
-    .stWarning p {
-        color: #856404 !important;
-    }
-    
-    /* Dataframe styling */
-    .dataframe {
-        border-radius: 6px;
-        overflow: hidden;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    /* Card styling */
-    .metric-card {
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #dee2e6;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        margin: 10px 0;
-    }
-    
-    /* Divider styling */
-    hr {
-        margin: 30px 0;
-        border: none;
-        border-top: 2px solid #e9ecef;
-    }
-    
-    /* Remove Streamlit menu and footer */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* Better spacing */
-    .element-container {
-        margin-bottom: 1.5rem;
-    }
-    
-    /* Caption text */
-    .stCaption {
-        color: #6c757d !important;
-    }
-    
-    /* Dataframe text */
-    .dataframe th {
-        background-color: #2E86AB !important;
-        color: #ffffff !important;
-        font-weight: 600 !important;
-    }
-    .dataframe td {
-        color: #212529 !important;
-        background-color: #ffffff !important;
-    }
-    
-    /* List items */
-    ul li, ol li {
-        color: #212529 !important;
-    }
-    
-    /* Strong and bold text */
-    strong, b {
-        color: #212529 !important;
-    }
-    
-    /* Code blocks */
-    code {
-        background-color: #f8f9fa !important;
-        color: #e83e8c !important;
-        padding: 2px 6px;
-        border-radius: 3px;
-    }
-    
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-        width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-    }
-    ::-webkit-scrollbar-thumb {
-        background: #2E86AB;
-        border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-        background: #1e5f7a;
-    }
-    
-    /* Ensure all markdown content is visible */
-    .stMarkdown {
-        color: #212529 !important;
-    }
-    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4 {
-        color: inherit !important;
-    }
-    
-    /* Table text */
-    table {
-        color: #212529 !important;
-    }
-    table th {
-        color: #ffffff !important;
-    }
-    table td {
-        color: #212529 !important;
-    }
-    </style>
-    <script>
-     // SIMPLE FIX - Force text visibility in selectbox
-     function fixSelectbox() {
-         // Fix all select elements
-         document.querySelectorAll('[data-baseweb="select"]').forEach(function(select) {
-             // Fix all child elements
-             select.querySelectorAll('*').forEach(function(el) {
-                 if (!el.closest('[data-baseweb="popover"]')) {
-                     el.style.color = '#212529';
-                     el.style.setProperty('color', '#212529', 'important');
-                 }
-             });
-         });
-         
-         // Fix dropdown menu
-         document.querySelectorAll('[data-baseweb="popover"]').forEach(function(popover) {
-             popover.style.backgroundColor = '#ffffff';
-             popover.querySelectorAll('*').forEach(function(el) {
-                 el.style.color = '#212529';
-                 el.style.setProperty('color', '#212529', 'important');
-             });
-         });
-     }
-     
-     // Run immediately
-     fixSelectbox();
-     
-     // Run after delays
-     setTimeout(fixSelectbox, 100);
-     setTimeout(fixSelectbox, 500);
-     
-     // Watch for changes
-     const observer = new MutationObserver(fixSelectbox);
-     observer.observe(document.body, { childList: true, subtree: true });
-     
-     // Fix on any click
-     document.addEventListener('click', function() {
-         setTimeout(fixSelectbox, 50);
-     }, true);
-    </script>
-    """, unsafe_allow_html=True)
+    // Fix control button icons
+    document.querySelectorAll('button svg').forEach(svg => {
+        const button = svg.closest('button');
+        if (button && (button.title?.includes('fullscreen') || button.closest('[data-testid="stDataFrame"]'))) {
+            svg.style.setProperty('fill', '#FFFFFF', 'important');
+            svg.style.setProperty('stroke', '#FFFFFF', 'important');
+        }
+    });
+}
+
+// Run fix
+fixVisibility();
+setTimeout(fixVisibility, 500);
+new MutationObserver(fixVisibility).observe(document.body, { childList: true, subtree: true });
+document.addEventListener('click', () => setTimeout(fixVisibility, 50));
+setInterval(fixVisibility, 2000);
+</script>
+""", unsafe_allow_html=True)
 
 
 def initialize_session_state():
@@ -451,16 +921,6 @@ def initialize_session_state():
         st.session_state.recommendation = None
     if 'inputs' not in st.session_state:
         st.session_state.inputs = None
-
-
-def format_currency(value: float) -> str:
-    """Format currency value for display."""
-    if value >= 1000000:
-        return f"${value/1000000:.2f}M"
-    elif value >= 1000:
-        return f"${value/1000:.2f}K"
-    else:
-        return f"${value:.2f}"
 
 
 def main():
